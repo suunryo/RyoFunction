@@ -44,31 +44,41 @@ function Promise2(fn) {
         if (_this._state === "pending") {
             _this._state = "rejected";
         }
-
-        setTimeout(function() {
-            if (_this.onRejected) {
-                _this.onRejected(err);
-            }
-            if (_this.onFinished) {
-                _this.onFinished(err);
-            }
-        })
+        this._result = err;
+        
+        if (_this.onRejected) {
+            _this.onRejected(err);
+        }
+        if (_this.onFinished) {
+            _this.onFinished(err);
+        }
     }
 
     try {
         fn(_resolve, _reject);
     } catch (err) {
+        this._result = err;
         _reject(err);
     }
    
 }
 
 Promise2.prototype.then = function(callback) {
+    if (this._state === "fulfilled) {
+        callback(this._result);
+        return;
+    }
+    
     this.onFulfilled.push(callback);
     return this;
 }
 
 Promise2.prototype.catch = function(callback) {
+    if (this._state === "rejected) {
+        callback(this._result);
+        return;
+    }
+
     this.onRejected = callback;
     return this;
 }
